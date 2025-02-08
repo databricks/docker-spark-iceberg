@@ -48,18 +48,18 @@ ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$
 
 WORKDIR ${SPARK_HOME}
 
-ENV SPARK_VERSION=3.5.2
-ENV SPARK_MAJOR_VERSION=3.5
+ENV SPARK_VERSION=3.3.2
+ENV SPARK_MAJOR_VERSION=3.3
 ENV ICEBERG_VERSION=1.6.0
 
 # Download spark
 RUN mkdir -p ${SPARK_HOME} \
- && curl https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz -o spark-${SPARK_VERSION}-bin-hadoop3.tgz \
+ && curl https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3-scala2.13.tgz -o spark-${SPARK_VERSION}-bin-hadoop3.tgz \
  && tar xvzf spark-${SPARK_VERSION}-bin-hadoop3.tgz --directory /opt/spark --strip-components 1 \
  && rm -rf spark-${SPARK_VERSION}-bin-hadoop3.tgz
 
 # Download iceberg spark runtime
-RUN curl https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-${SPARK_MAJOR_VERSION}_2.12/${ICEBERG_VERSION}/iceberg-spark-runtime-${SPARK_MAJOR_VERSION}_2.12-${ICEBERG_VERSION}.jar -Lo /opt/spark/jars/iceberg-spark-runtime-${SPARK_MAJOR_VERSION}_2.12-${ICEBERG_VERSION}.jar
+RUN curl https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-${SPARK_MAJOR_VERSION}_2.13/${ICEBERG_VERSION}/iceberg-spark-runtime-${SPARK_MAJOR_VERSION}_2.13-${ICEBERG_VERSION}.jar -Lo /opt/spark/jars/iceberg-spark-runtime-${SPARK_MAJOR_VERSION}_2.13-${ICEBERG_VERSION}.jar
 
 # Download AWS bundle
 RUN curl -s https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-aws-bundle/${ICEBERG_VERSION}/iceberg-aws-bundle-${ICEBERG_VERSION}.jar -Lo /opt/spark/jars/iceberg-aws-bundle-${ICEBERG_VERSION}.jar
@@ -126,6 +126,18 @@ RUN chmod u+x /opt/spark/sbin/* && \
 COPY .pyiceberg.yaml /root/.pyiceberg.yaml
 
 COPY entrypoint.sh .
+
+# Add libraries for MinIO access and fixes.
+RUN wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.2/hadoop-aws-3.3.2.jar -P /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-common/3.3.2/hadoop-common-3.3.2.jar -P /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.172/aws-java-sdk-bundle-1.12.172.jar -P /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.17.257/bundle-2.17.257.jar -P /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/software/amazon/awssdk/url-connection-client/2.17.257/url-connection-client-2.17.257.jar -P /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/org/apache/spark/spark-hadoop-cloud_2.13/3.3.2/spark-hadoop-cloud_2.13-3.3.2.jar -P /opt/spark/jars/
+RUN wget https://repo.maven.apache.org/maven2/org/projectnessie/nessie-spark-extensions-3.3_2.13/0.50.0/nessie-spark-extensions-3.3_2.13-0.50.0.jar -P /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.13/3.3.2/spark-sql-kafka-0-10_2.13-3.3.2.jar -P /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.3.2/kafka-clients-3.3.2.jar -P /opt/spark/jars/
+RUN wget https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.13/3.3.2/spark-token-provider-kafka-0-10_2.13-3.3.2.jar -P /opt/spark/jars/
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["notebook"]
