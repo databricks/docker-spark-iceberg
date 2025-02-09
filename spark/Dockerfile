@@ -138,6 +138,9 @@ RUN wget https://repo.maven.apache.org/maven2/org/projectnessie/nessie-spark-ext
 RUN wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.13/3.3.2/spark-sql-kafka-0-10_2.13-3.3.2.jar -P /opt/spark/jars/
 RUN wget https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.3.2/kafka-clients-3.3.2.jar -P /opt/spark/jars/
 RUN wget https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.13/3.3.2/spark-token-provider-kafka-0-10_2.13-3.3.2.jar -P /opt/spark/jars/
+# Patch antlr4 to higher version because we are using higher version Iceberg (1.1.0 vs. 1.6.0).
+RUN wget https://repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.9.3/antlr4-runtime-4.9.3.jar -P /opt/spark/jars/
+RUN rm /opt/spark/jars/antlr4-runtime-4.8.jar
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["notebook"]
