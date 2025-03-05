@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # syntax=docker/dockerfile:1
-FROM python:3.10-bullseye
+FROM python:3.11-bullseye
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -50,7 +50,7 @@ WORKDIR ${SPARK_HOME}
 
 ENV SPARK_VERSION=3.5.5
 ENV SPARK_MAJOR_VERSION=3.5
-ENV ICEBERG_VERSION=1.6.0
+ENV ICEBERG_VERSION=1.8.1
 
 # Download spark
 RUN mkdir -p ${SPARK_HOME} \

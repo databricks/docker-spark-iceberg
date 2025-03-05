@@ -1,4 +1,4 @@
-jupyter==1.0.0
+jupyter==1.1.1
 spylon-kernel==0.4.1
 pyiceberg[pyarrow,duckdb,pandas]==0.7.1
 jupysql==0.10.5
