@@ -17,6 +17,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+export JAVA_OPTS='--add-exports java.base/sun.nio.ch=ALL-UNNAMED'
+
 start-master.sh -p 7077
 start-worker.sh spark://spark-iceberg:7077
 start-history-server.sh
