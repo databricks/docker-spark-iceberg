@@ -17,10 +17,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-export JAVA_OPTS='--add-exports java.base/sun.nio.ch=ALL-UNNAMED'
-
-start-master.sh -p 7077
-start-worker.sh spark://spark-iceberg:7077
+start-master.sh --conf "spark.driver.extraJavaOptions=--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" \
+                --conf "spark.executor.extraJavaOptions=--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" -p 7077
+start-worker.sh --conf "spark.driver.extraJavaOptions=--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" \
+                --conf "spark.executor.extraJavaOptions=--add-opens=java.base/sun.nio.ch=ALL-UNNAMED" spark://spark-iceberg:7077
 start-history-server.sh
 start-thriftserver.sh  --driver-java-options "-Dderby.system.home=/tmp/derby"
 
