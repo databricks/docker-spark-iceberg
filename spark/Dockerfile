@@ -117,6 +117,8 @@ RUN mkdir -p /root/.ipython/profile_default/startup
 COPY ipython/startup/00-prettytables.py /root/.ipython/profile_default/startup
 COPY ipython/startup/README /root/.ipython/profile_default/startup
 
+ENV JAVA_OPTS="--add-exports java.base/sun.nio.ch=ALL-UNNAMED"
+
 COPY spark-defaults.conf /opt/spark/conf
 ENV PATH="/opt/spark/sbin:/opt/spark/bin:${PATH}"
 
