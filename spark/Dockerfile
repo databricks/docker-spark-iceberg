@@ -22,7 +22,7 @@ RUN apt-get update && \
       curl \
       vim \
       unzip \
-      openjdk-11-jdk \
+      openjdk-17-jdk \
       build-essential \
       software-properties-common \
       ssh && \
@@ -48,9 +48,9 @@ ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$
 
 WORKDIR ${SPARK_HOME}
 
-ENV SPARK_VERSION=3.5.2
+ENV SPARK_VERSION=3.5.5
 ENV SPARK_MAJOR_VERSION=3.5
-ENV ICEBERG_VERSION=1.6.0
+ENV ICEBERG_VERSION=1.8.1
 
 # Download spark
 RUN mkdir -p ${SPARK_HOME} \

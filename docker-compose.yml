@@ -40,7 +40,7 @@ services:
       - 10000:10000
       - 10001:10001
   rest:
-    image: tabulario/iceberg-rest
+    image: apache/iceberg-rest-fixture
     container_name: iceberg-rest
     networks:
       iceberg_net:
@@ -84,7 +84,7 @@ services:
       until (/usr/bin/mc config host add minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
       /usr/bin/mc rm -r --force minio/warehouse;
       /usr/bin/mc mb minio/warehouse;
-      /usr/bin/mc policy set public minio/warehouse;
+      /usr/bin/mc anonymous set public minio/warehouse;
       tail -f /dev/null
       "
 networks:
