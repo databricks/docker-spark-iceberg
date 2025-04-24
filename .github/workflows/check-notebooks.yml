@@ -28,4 +28,4 @@ jobs:
         run: docker exec $(docker ps -q --filter expose=8888) pip3 install papermill
 
       - name: Run notebooks
-        run: ls spark/notebooks | xargs -I {} docker exec -e JAVA_OPTS="--add-exports java.base/sun.nio.ch=ALL-UNNAMED" $(docker ps -q --filter expose=8888) papermill "/home/iceberg/notebooks/{}"
+        run: ls spark/notebooks | xargs -I {} docker exec $(docker ps -q --filter expose=8888) papermill "/home/iceberg/notebooks/{}"
