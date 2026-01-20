@@ -45,8 +45,10 @@ services:
     networks:
       iceberg_net:
     depends_on:
-      - rest
-      - ozone-s3g
+      rest:
+        condition: service_started
+      ozone-s3g:
+        condition: service_healthy
     volumes:
       - ./warehouse:/home/iceberg/warehouse
       - ./notebooks:/home/iceberg/notebooks/notebooks
@@ -136,6 +138,12 @@ services:
         ozone sh bucket delete /s3v/warehouse || true
         ozone sh bucket create /s3v/warehouse
         wait "$$s3g_pid"
+    healthcheck:
+      test: [ "CMD", "ozone", "sh", "bucket", "info", "/s3v/warehouse" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
     networks:
       iceberg_net:
         aliases:
