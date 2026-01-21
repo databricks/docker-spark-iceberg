@@ -1,0 +1,115 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+---
+x-image:
+  &ozone-image
+  image: ${OZONE_IMAGE:-apache/ozone}:${OZONE_IMAGE_VERSION:-2.1.0}${OZONE_IMAGE_FLAVOR:-}
+
+x-common-config:
+  &ozone-common-config
+  OZONE-SITE.XML_hdds.datanode.dir: "/data/hdds"
+  OZONE-SITE.XML_ozone.metadata.dirs: "/data/metadata"
+  OZONE-SITE.XML_ozone.om.address: "ozone-om"
+  OZONE-SITE.XML_ozone.om.http-address: "ozone-om:9874"
+  OZONE-SITE.XML_ozone.recon.address: "ozone-recon:9891"
+  OZONE-SITE.XML_ozone.recon.db.dir: "/data/metadata/recon"
+  OZONE-SITE.XML_ozone.replication: "1"
+  OZONE-SITE.XML_ozone.scm.block.client.address: "ozone-scm"
+  OZONE-SITE.XML_ozone.scm.client.address: "ozone-scm"
+  OZONE-SITE.XML_ozone.scm.datanode.id.dir: "/data/metadata"
+  OZONE-SITE.XML_ozone.scm.names: "ozone-scm"
+  OZONE-SITE.XML_hdds.scm.safemode.min.datanode: "1"
+  OZONE-SITE.XML_hdds.scm.safemode.healthy.pipeline.pct: "0"
+  OZONE-SITE.XML_ozone.s3g.domain.name: "s3.ozone"
+  no_proxy: "ozone-om,ozone-recon,ozone-scm,ozone-s3g,localhost,127.0.0.1"
+
+services:
+  ozone-datanode:
+    <<: *ozone-image
+    ports:
+      - 9864
+    command: ["ozone", "datanode"]
+    environment:
+      <<: *ozone-common-config
+    networks:
+      iceberg_net:
+
+  ozone-om:
+    <<: *ozone-image
+    ports:
+      - 9874:9874
+    environment:
+      <<: *ozone-common-config
+      CORE-SITE.XML_hadoop.proxyuser.hadoop.hosts: "*"
+      CORE-SITE.XML_hadoop.proxyuser.hadoop.groups: "*"
+      ENSURE_OM_INITIALIZED: /data/metadata/om/current/VERSION
+      WAITFOR: ozone-scm:9876
+    command: ["ozone", "om"]
+    networks:
+      iceberg_net:
+
+  ozone-scm:
+    <<: *ozone-image
+    ports:
+      - 9876:9876
+    environment:
+      <<: *ozone-common-config
+      ENSURE_SCM_INITIALIZED: /data/metadata/scm/current/VERSION
+    command: ["ozone", "scm"]
+    networks:
+      iceberg_net:
+
+  ozone-recon:
+    <<: *ozone-image
+    ports:
+      - 9888:9888
+    environment:
+      <<: *ozone-common-config
+    command: ["ozone", "recon"]
+    networks:
+      iceberg_net:
+
+  ozone-s3g:
+    <<: *ozone-image
+    ports:
+      - 9878:9878
+    environment:
+      <<: *ozone-common-config
+      WAITFOR: ozone-om:9874
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        ozone s3g &
+        s3g_pid=$$!
+        until ozone sh volume list >/dev/null 2>&1; do echo '...waiting...' && sleep 1; done;
+        ozone sh bucket delete /s3v/warehouse || true
+        ozone sh bucket create /s3v/warehouse
+        wait "$$s3g_pid"
+    healthcheck:
+      test: [ "CMD", "ozone", "sh", "bucket", "info", "/s3v/warehouse" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      iceberg_net:
+        aliases:
+          - s3.ozone
+          - warehouse.s3.ozone
+

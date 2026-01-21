@@ -20,7 +20,7 @@
 # Spark + Iceberg Quickstart Image
 
 This is a docker compose environment to quickly get up and running with a Spark environment and a local REST
-catalog, and Apache Ozone as a storage backend.
+catalog, and [Apache Ozone](https://ozone.apache.org/) as a storage backend.
 
 **note**: If you don't have docker installed, you can head over to the [Get Docker](https://docs.docker.com/get-docker/)
 page for installation instructions.
